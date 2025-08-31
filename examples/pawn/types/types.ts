@@ -1,4 +1,4 @@
-import { type LoopState } from "../../lib/simulation";
+import { type LoopState } from "../../../lib/simulation";
 import { type PawnItem } from "./items";
 
 // Core game state that extends the simulation framework

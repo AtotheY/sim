@@ -15,6 +15,9 @@
     "example:energy-rng": "bun run examples/index.ts energy-rng",
     "example:pawn": "bun run examples/index.ts pawn",
     "example:energy-ai": "bun run examples/index.ts energy-ai",
+    "test": "bun test",
+    "test:pawn": "bun test examples/pawn/tests/",
+    "test:all": "bun run test:pawn",
     "build": "tsc",
     "dev": "bun run examples/index.ts"
   },
@@ -28,7 +31,7 @@
   "author": "Anthony Sistilli",
   "license": "MIT",
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "^1.2.21",
     "typescript": "^5"
   },
   "dependencies": {

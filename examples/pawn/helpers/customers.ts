@@ -1,10 +1,10 @@
-import { type Customer, type CustomerItem, GAME_CONFIG } from "./types";
+import { type Customer, type CustomerItem, GAME_CONFIG } from "../types/types";
 import {
   PAWN_ITEMS,
   getRandomItems,
   getActualValue,
   type PawnItem,
-} from "./items";
+} from "../types/items";
 
 // Customer names pool
 const CUSTOMER_NAMES = [
