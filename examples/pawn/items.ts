@@ -1,0 +1,782 @@
+export interface PawnItem {
+  id: string;
+  name: string;
+  category: string;
+  baseValue: number; // Base market value
+  condition: "poor" | "fair" | "good" | "excellent";
+  description: string;
+}
+
+export const ITEM_CONDITIONS = {
+  poor: { multiplier: 0.3, label: "Poor" },
+  fair: { multiplier: 0.5, label: "Fair" },
+  good: { multiplier: 0.7, label: "Good" },
+  excellent: { multiplier: 0.9, label: "Excellent" },
+} as const;
+
+export const PAWN_ITEMS: PawnItem[] = [
+  // Jewelry
+  {
+    id: "gold_ring_1",
+    name: "Gold Wedding Ring",
+    category: "jewelry",
+    baseValue: 300,
+    condition: "good",
+    description: "14k gold wedding band with slight wear",
+  },
+  {
+    id: "diamond_earrings",
+    name: "Diamond Stud Earrings",
+    category: "jewelry",
+    baseValue: 800,
+    condition: "excellent",
+    description: "1 carat total weight, brilliant cut",
+  },
+  {
+    id: "silver_necklace",
+    name: "Silver Chain Necklace",
+    category: "jewelry",
+    baseValue: 150,
+    condition: "fair",
+    description: "Sterling silver, 18 inch chain with tarnish",
+  },
+  {
+    id: "vintage_watch",
+    name: "Vintage Rolex Watch",
+    category: "jewelry",
+    baseValue: 2500,
+    condition: "good",
+    description: "1970s Submariner, needs service",
+  },
+  {
+    id: "pearl_bracelet",
+    name: "Pearl Bracelet",
+    category: "jewelry",
+    baseValue: 400,
+    condition: "excellent",
+    description: "Cultured pearls with gold clasp",
+  },
+  {
+    id: "ruby_pendant",
+    name: "Ruby Pendant",
+    category: "jewelry",
+    baseValue: 600,
+    condition: "good",
+    description: "Natural ruby in white gold setting",
+  },
+  {
+    id: "mens_chain",
+    name: "Men's Gold Chain",
+    category: "jewelry",
+    baseValue: 450,
+    condition: "fair",
+    description: "18k gold rope chain, 24 inches",
+  },
+  {
+    id: "engagement_ring",
+    name: "Engagement Ring",
+    category: "jewelry",
+    baseValue: 1200,
+    condition: "excellent",
+    description: "0.75 carat solitaire diamond",
+  },
+
+  // Electronics
+  {
+    id: "iphone_13",
+    name: "iPhone 13",
+    category: "electronics",
+    baseValue: 500,
+    condition: "good",
+    description: "128GB, unlocked, minor scratches",
+  },
+  {
+    id: "laptop_dell",
+    name: "Dell Laptop",
+    category: "electronics",
+    baseValue: 350,
+    condition: "fair",
+    description: "Dell Inspiron 15, 8GB RAM, slow performance",
+  },
+  {
+    id: "gaming_console",
+    name: "PlayStation 5",
+    category: "electronics",
+    baseValue: 450,
+    condition: "excellent",
+    description: "PS5 with controller, like new",
+  },
+  {
+    id: "tablet_ipad",
+    name: "iPad Air",
+    category: "electronics",
+    baseValue: 300,
+    condition: "good",
+    description: "64GB WiFi model, small crack on screen",
+  },
+  {
+    id: "smart_tv",
+    name: '55" Smart TV',
+    category: "electronics",
+    baseValue: 400,
+    condition: "good",
+    description: "Samsung 4K TV, works perfectly",
+  },
+  {
+    id: "bluetooth_speaker",
+    name: "Bluetooth Speaker",
+    category: "electronics",
+    baseValue: 80,
+    condition: "excellent",
+    description: "JBL Charge 5, waterproof",
+  },
+  {
+    id: "camera_canon",
+    name: "Canon DSLR Camera",
+    category: "electronics",
+    baseValue: 600,
+    condition: "good",
+    description: "Canon EOS Rebel T7i with kit lens",
+  },
+  {
+    id: "headphones_beats",
+    name: "Beats Headphones",
+    category: "electronics",
+    baseValue: 200,
+    condition: "fair",
+    description: "Beats Studio 3, worn ear pads",
+  },
+  {
+    id: "smartwatch",
+    name: "Apple Watch",
+    category: "electronics",
+    baseValue: 250,
+    condition: "good",
+    description: "Series 7, 41mm, sport band",
+  },
+  {
+    id: "gaming_laptop",
+    name: "Gaming Laptop",
+    category: "electronics",
+    baseValue: 800,
+    condition: "excellent",
+    description: "ASUS ROG, RTX 3060, 16GB RAM",
+  },
+
+  // Tools
+  {
+    id: "drill_dewalt",
+    name: "DeWalt Cordless Drill",
+    category: "tools",
+    baseValue: 120,
+    condition: "good",
+    description: "20V MAX drill with battery and charger",
+  },
+  {
+    id: "socket_set",
+    name: "Socket Wrench Set",
+    category: "tools",
+    baseValue: 80,
+    condition: "excellent",
+    description: "Craftsman 42-piece set",
+  },
+  {
+    id: "circular_saw",
+    name: "Circular Saw",
+    category: "tools",
+    baseValue: 150,
+    condition: "fair",
+    description: 'Makita 7.25" saw, blade needs replacing',
+  },
+  {
+    id: "tool_chest",
+    name: "Rolling Tool Chest",
+    category: "tools",
+    baseValue: 300,
+    condition: "good",
+    description: "Snap-on chest with drawers",
+  },
+  {
+    id: "air_compressor",
+    name: "Air Compressor",
+    category: "tools",
+    baseValue: 200,
+    condition: "good",
+    description: "Porter-Cable 6-gallon pancake",
+  },
+  {
+    id: "impact_wrench",
+    name: "Impact Wrench",
+    category: "tools",
+    baseValue: 180,
+    condition: "excellent",
+    description: "Milwaukee M18 FUEL",
+  },
+  {
+    id: "miter_saw",
+    name: "Miter Saw",
+    category: "tools",
+    baseValue: 250,
+    condition: "good",
+    description: 'Ryobi 10" compound miter saw',
+  },
+  {
+    id: "toolbox_basic",
+    name: "Basic Tool Box",
+    category: "tools",
+    baseValue: 60,
+    condition: "fair",
+    description: "Metal toolbox with basic hand tools",
+  },
+
+  // Musical Instruments
+  {
+    id: "guitar_acoustic",
+    name: "Acoustic Guitar",
+    category: "instruments",
+    baseValue: 200,
+    condition: "good",
+    description: "Yamaha FG800, solid spruce top",
+  },
+  {
+    id: "guitar_electric",
+    name: "Electric Guitar",
+    category: "instruments",
+    baseValue: 350,
+    condition: "excellent",
+    description: "Fender Stratocaster, Mexican made",
+  },
+  {
+    id: "keyboard_piano",
+    name: "Electric Piano",
+    category: "instruments",
+    baseValue: 400,
+    condition: "good",
+    description: "Yamaha P-45, 88 keys, weighted",
+  },
+  {
+    id: "drum_set",
+    name: "Drum Set",
+    category: "instruments",
+    baseValue: 500,
+    condition: "fair",
+    description: "Pearl Export 5-piece, cymbals included",
+  },
+  {
+    id: "violin",
+    name: "Violin",
+    category: "instruments",
+    baseValue: 300,
+    condition: "good",
+    description: "4/4 size with case and bow",
+  },
+  {
+    id: "trumpet",
+    name: "Trumpet",
+    category: "instruments",
+    baseValue: 250,
+    condition: "excellent",
+    description: "Bach student model, brass",
+  },
+  {
+    id: "bass_guitar",
+    name: "Bass Guitar",
+    category: "instruments",
+    baseValue: 280,
+    condition: "good",
+    description: "Ibanez 4-string electric bass",
+  },
+  {
+    id: "microphone",
+    name: "Studio Microphone",
+    category: "instruments",
+    baseValue: 150,
+    condition: "excellent",
+    description: "Audio-Technica AT2020",
+  },
+
+  // Sports Equipment
+  {
+    id: "golf_clubs",
+    name: "Golf Club Set",
+    category: "sports",
+    baseValue: 300,
+    condition: "good",
+    description: "Callaway iron set, 5-PW",
+  },
+  {
+    id: "bicycle_road",
+    name: "Road Bicycle",
+    category: "sports",
+    baseValue: 400,
+    condition: "good",
+    description: "Trek road bike, 21-speed",
+  },
+  {
+    id: "exercise_bike",
+    name: "Exercise Bike",
+    category: "sports",
+    baseValue: 200,
+    condition: "fair",
+    description: "Stationary bike, squeaky pedals",
+  },
+  {
+    id: "weights_dumbbells",
+    name: "Dumbbell Set",
+    category: "sports",
+    baseValue: 150,
+    condition: "excellent",
+    description: "Adjustable dumbbells, 5-50 lbs",
+  },
+  {
+    id: "kayak",
+    name: "Kayak",
+    category: "sports",
+    baseValue: 350,
+    condition: "good",
+    description: "Single person recreational kayak",
+  },
+  {
+    id: "snowboard",
+    name: "Snowboard",
+    category: "sports",
+    baseValue: 180,
+    condition: "fair",
+    description: "Burton board with bindings",
+  },
+  {
+    id: "tennis_racket",
+    name: "Tennis Racket",
+    category: "sports",
+    baseValue: 80,
+    condition: "excellent",
+    description: "Wilson Pro Staff, recently strung",
+  },
+  {
+    id: "fishing_rod",
+    name: "Fishing Rod Set",
+    category: "sports",
+    baseValue: 120,
+    condition: "good",
+    description: "Ugly Stik rod with reel and tackle",
+  },
+
+  // Home Appliances
+  {
+    id: "microwave",
+    name: "Microwave Oven",
+    category: "appliances",
+    baseValue: 100,
+    condition: "good",
+    description: "Panasonic 1.2 cu ft, works perfectly",
+  },
+  {
+    id: "vacuum_dyson",
+    name: "Dyson Vacuum",
+    category: "appliances",
+    baseValue: 200,
+    condition: "excellent",
+    description: "Dyson V8 cordless stick vacuum",
+  },
+  {
+    id: "coffee_maker",
+    name: "Espresso Machine",
+    category: "appliances",
+    baseValue: 300,
+    condition: "good",
+    description: "Breville Bambino Plus",
+  },
+  {
+    id: "blender_vitamix",
+    name: "Vitamix Blender",
+    category: "appliances",
+    baseValue: 250,
+    condition: "excellent",
+    description: "Professional-grade blender",
+  },
+  {
+    id: "air_fryer",
+    name: "Air Fryer",
+    category: "appliances",
+    baseValue: 80,
+    condition: "good",
+    description: "Ninja Foodi 8-quart",
+  },
+  {
+    id: "toaster_oven",
+    name: "Toaster Oven",
+    category: "appliances",
+    baseValue: 60,
+    condition: "fair",
+    description: "Black & Decker, heating unevenly",
+  },
+
+  // Art & Collectibles
+  {
+    id: "painting_oil",
+    name: "Oil Painting",
+    category: "art",
+    baseValue: 400,
+    condition: "excellent",
+    description: "Local artist landscape, framed",
+  },
+  {
+    id: "sculpture_bronze",
+    name: "Bronze Sculpture",
+    category: "art",
+    baseValue: 800,
+    condition: "good",
+    description: "Small bronze figurine, signed",
+  },
+  {
+    id: "comic_books",
+    name: "Comic Book Collection",
+    category: "collectibles",
+    baseValue: 200,
+    condition: "good",
+    description: "Marvel comics from 1980s-90s",
+  },
+  {
+    id: "vinyl_records",
+    name: "Vinyl Record Collection",
+    category: "collectibles",
+    baseValue: 300,
+    condition: "fair",
+    description: "Classic rock albums, some scratches",
+  },
+  {
+    id: "antique_vase",
+    name: "Antique Vase",
+    category: "art",
+    baseValue: 350,
+    condition: "excellent",
+    description: "Chinese porcelain, Ming dynasty style",
+  },
+  {
+    id: "coin_collection",
+    name: "Coin Collection",
+    category: "collectibles",
+    baseValue: 500,
+    condition: "good",
+    description: "Silver dollars and rare pennies",
+  },
+  {
+    id: "baseball_cards",
+    name: "Baseball Card Collection",
+    category: "collectibles",
+    baseValue: 150,
+    condition: "fair",
+    description: "1990s cards, some valuable rookies",
+  },
+  {
+    id: "pocket_watch",
+    name: "Antique Pocket Watch",
+    category: "collectibles",
+    baseValue: 600,
+    condition: "good",
+    description: "Hamilton Railway Special, 1920s",
+  },
+
+  // Furniture
+  {
+    id: "leather_chair",
+    name: "Leather Armchair",
+    category: "furniture",
+    baseValue: 250,
+    condition: "fair",
+    description: "Brown leather, some cracking",
+  },
+  {
+    id: "dining_table",
+    name: "Dining Table",
+    category: "furniture",
+    baseValue: 300,
+    condition: "good",
+    description: "Oak wood table, seats 6",
+  },
+  {
+    id: "bookshelf",
+    name: "Wooden Bookshelf",
+    category: "furniture",
+    baseValue: 150,
+    condition: "excellent",
+    description: "Solid wood, 5 shelves",
+  },
+  {
+    id: "dresser_antique",
+    name: "Antique Dresser",
+    category: "furniture",
+    baseValue: 400,
+    condition: "good",
+    description: "Victorian-style with mirror",
+  },
+  {
+    id: "desk_office",
+    name: "Office Desk",
+    category: "furniture",
+    baseValue: 200,
+    condition: "fair",
+    description: "L-shaped desk with drawers",
+  },
+
+  // Automotive
+  {
+    id: "car_stereo",
+    name: "Car Stereo System",
+    category: "automotive",
+    baseValue: 180,
+    condition: "excellent",
+    description: "Pioneer touchscreen with GPS",
+  },
+  {
+    id: "tire_set",
+    name: "Tire Set",
+    category: "automotive",
+    baseValue: 300,
+    condition: "good",
+    description: "Four matching tires, 70% tread",
+  },
+  {
+    id: "car_battery",
+    name: "Car Battery",
+    category: "automotive",
+    baseValue: 100,
+    condition: "excellent",
+    description: "Interstate battery, 6 months old",
+  },
+  {
+    id: "motorcycle_helmet",
+    name: "Motorcycle Helmet",
+    category: "automotive",
+    baseValue: 120,
+    condition: "good",
+    description: "DOT approved, full face",
+  },
+
+  // Fashion & Accessories
+  {
+    id: "leather_jacket",
+    name: "Leather Jacket",
+    category: "fashion",
+    baseValue: 200,
+    condition: "good",
+    description: "Genuine leather biker jacket",
+  },
+  {
+    id: "designer_handbag",
+    name: "Designer Handbag",
+    category: "fashion",
+    baseValue: 600,
+    condition: "excellent",
+    description: "Coach leather purse, authentic",
+  },
+  {
+    id: "sunglasses_ray_ban",
+    name: "Ray-Ban Sunglasses",
+    category: "fashion",
+    baseValue: 150,
+    condition: "good",
+    description: "Aviator style, polarized lenses",
+  },
+  {
+    id: "boots_cowboy",
+    name: "Cowboy Boots",
+    category: "fashion",
+    baseValue: 180,
+    condition: "fair",
+    description: "Tony Lama boots, size 10, worn",
+  },
+  {
+    id: "suit_mens",
+    name: "Men's Suit",
+    category: "fashion",
+    baseValue: 300,
+    condition: "excellent",
+    description: "Hugo Boss wool suit, navy blue",
+  },
+
+  // Gaming
+  {
+    id: "xbox_series_x",
+    name: "Xbox Series X",
+    category: "gaming",
+    baseValue: 450,
+    condition: "excellent",
+    description: "Next-gen console with controller",
+  },
+  {
+    id: "nintendo_switch",
+    name: "Nintendo Switch",
+    category: "gaming",
+    baseValue: 250,
+    condition: "good",
+    description: "Console with Joy-Con controllers",
+  },
+  {
+    id: "gaming_chair",
+    name: "Gaming Chair",
+    category: "gaming",
+    baseValue: 200,
+    condition: "fair",
+    description: "Racing-style chair, worn padding",
+  },
+  {
+    id: "mechanical_keyboard",
+    name: "Mechanical Keyboard",
+    category: "gaming",
+    baseValue: 120,
+    condition: "excellent",
+    description: "RGB backlit, Cherry MX switches",
+  },
+  {
+    id: "gaming_monitor",
+    name: "Gaming Monitor",
+    category: "gaming",
+    baseValue: 300,
+    condition: "good",
+    description: '27" 144Hz display',
+  },
+
+  // Power Tools (Additional)
+  {
+    id: "angle_grinder",
+    name: "Angle Grinder",
+    category: "tools",
+    baseValue: 90,
+    condition: "good",
+    description: 'Bosch 4.5" grinder',
+  },
+  {
+    id: "reciprocating_saw",
+    name: "Reciprocating Saw",
+    category: "tools",
+    baseValue: 110,
+    condition: "excellent",
+    description: "Sawzall with blades",
+  },
+  {
+    id: "nail_gun",
+    name: "Nail Gun",
+    category: "tools",
+    baseValue: 160,
+    condition: "good",
+    description: "Pneumatic framing nailer",
+  },
+  {
+    id: "generator",
+    name: "Portable Generator",
+    category: "tools",
+    baseValue: 400,
+    condition: "fair",
+    description: "3500W gas generator, needs tune-up",
+  },
+
+  // Kitchen Items
+  {
+    id: "knife_set",
+    name: "Professional Knife Set",
+    category: "kitchen",
+    baseValue: 200,
+    condition: "excellent",
+    description: "Wusthof 8-piece set with block",
+  },
+  {
+    id: "stand_mixer",
+    name: "Stand Mixer",
+    category: "kitchen",
+    baseValue: 250,
+    condition: "good",
+    description: "KitchenAid Artisan, red",
+  },
+  {
+    id: "cookware_set",
+    name: "Cookware Set",
+    category: "kitchen",
+    baseValue: 180,
+    condition: "fair",
+    description: "All-Clad stainless steel, some wear",
+  },
+
+  // Outdoor Equipment
+  {
+    id: "lawn_mower",
+    name: "Lawn Mower",
+    category: "outdoor",
+    baseValue: 300,
+    condition: "good",
+    description: 'Honda self-propelled, 21"',
+  },
+  {
+    id: "chainsaw",
+    name: "Chainsaw",
+    category: "outdoor",
+    baseValue: 200,
+    condition: "fair",
+    description: 'Stihl 16" bar, needs maintenance',
+  },
+  {
+    id: "leaf_blower",
+    name: "Leaf Blower",
+    category: "outdoor",
+    baseValue: 120,
+    condition: "excellent",
+    description: "Battery-powered backpack blower",
+  },
+  {
+    id: "grill_gas",
+    name: "Gas Grill",
+    category: "outdoor",
+    baseValue: 250,
+    condition: "good",
+    description: "Weber 3-burner with propane tank",
+  },
+
+  // Office Equipment
+  {
+    id: "printer_laser",
+    name: "Laser Printer",
+    category: "office",
+    baseValue: 150,
+    condition: "good",
+    description: "HP LaserJet, black and white",
+  },
+  {
+    id: "shredder",
+    name: "Paper Shredder",
+    category: "office",
+    baseValue: 80,
+    condition: "excellent",
+    description: "Cross-cut shredder, 12 sheets",
+  },
+  {
+    id: "filing_cabinet",
+    name: "Filing Cabinet",
+    category: "office",
+    baseValue: 100,
+    condition: "fair",
+    description: "4-drawer metal cabinet, some rust",
+  },
+];
+
+// Helper function to get items by category
+export function getItemsByCategory(category: string): PawnItem[] {
+  return PAWN_ITEMS.filter((item) => item.category === category);
+}
+
+// Helper function to get random items
+export function getRandomItems(count: number): PawnItem[] {
+  const shuffled = [...PAWN_ITEMS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+// Helper function to calculate actual value based on condition
+export function getActualValue(item: PawnItem): number {
+  return Math.round(
+    item.baseValue * ITEM_CONDITIONS[item.condition].multiplier
+  );
+}
+
+// Get all categories
+export function getCategories(): string[] {
+  return [...new Set(PAWN_ITEMS.map((item) => item.category))];
+}
