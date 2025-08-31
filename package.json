@@ -1,0 +1,46 @@
+{
+  "name": "@fallom/sim",
+  "version": "0.1.0",
+  "description": "Universal simulation framework for AI agents",
+  "main": "lib/index.js",
+  "module": "lib/index.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./lib/index.ts",
+      "require": "./lib/index.js"
+    }
+  },
+  "scripts": {
+    "example:energy-rng": "bun run examples/index.ts energy-rng",
+    "example:pawn": "bun run examples/index.ts pawn",
+    "example:energy-ai": "bun run examples/index.ts energy-ai",
+    "build": "tsc",
+    "dev": "bun run examples/index.ts"
+  },
+  "keywords": [
+    "simulation",
+    "ai",
+    "agents",
+    "testing",
+    "framework"
+  ],
+  "author": "Anthony Sistilli",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.62.1",
+    "@opentelemetry/sdk-node": "^0.203.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "@ai-sdk/openai": "^1.0.0",
+    "ai": "^4.0.0",
+    "zod": "^3.0.0"
+  }
+}
