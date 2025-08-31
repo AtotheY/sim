@@ -18,6 +18,7 @@ The agent has the following actions:
 - View their items 
 - View their money
 - View the trades made up to this point
+- Lookup item price
 
 The agent has the following goals:
 - Make as much money as possible
