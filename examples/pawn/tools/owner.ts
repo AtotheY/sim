@@ -1,7 +1,10 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
 import { getSimState } from "../../../lib/state";
 import { type PawnGameState, GAME_CONFIG } from "../types/types";
+import * as customerTools from "./customer";
 
 export const talkToCustomer = tool({
   description:
@@ -45,14 +48,56 @@ export const talkToCustomer = tool({
       message: message,
     });
 
-    // Simple customer response for now (later we can use GPT-4o-mini)
+    // Generate customer response using customer agent with tools
+    const conversationHistory = conversation.messages
+      .map(
+        (m) =>
+          `${m.sender === "owner" ? "Pawn Shop Owner" : currentCustomer.name}: ${m.message}`
+      )
+      .join("\n");
+
+    const customerPrompt = `You are ${currentCustomer.name}, a customer in a pawn shop. 
+
+Your character:
+- You want to sell: ${currentCustomer.itemToSell.item.name} (${currentCustomer.itemToSell.item.condition}) - ${currentCustomer.itemToSell.item.description}
+- Your minimum acceptable price: $${currentCustomer.itemToSell.minPrice} (don't reveal this easily)
+- Your asking price: $${currentCustomer.itemToSell.maxPrice}
+- You're also interested in buying these items if the owner has them: ${currentCustomer.interestedInBuying.join(", ")}
+
+Conversation so far:
+${conversationHistory}
+
+The pawn shop owner just said: "${message}"
+
+Use the available tools to respond. You can:
+- talk: Send a message to continue the conversation
+- respondToOffer: Accept or refuse a specific price offer
+- leaveShop: Leave if you're not satisfied
+
+Be realistic about haggling - you want a fair price but won't accept lowball offers below your minimum.`;
+
+    const response = await generateText({
+      model: openai("gpt-4o-mini"),
+      prompt: customerPrompt,
+      tools: customerTools,
+      toolChoice: "required",
+      temperature: 0.7,
+    });
+
+    // Process the customer's tool result
     let customerResponse = "";
-    if (conversation.messages.length === 1) {
-      // First interaction - customer introduces themselves and their item
-      const item = currentCustomer.itemToSell.item;
-      customerResponse = `Hi! I'm ${currentCustomer.name}. I have a ${item.name} that I'm looking to sell. It's in ${item.condition} condition. I was hoping to get around $${currentCustomer.itemToSell.maxPrice} for it.`;
+    if (response.toolResults && response.toolResults.length > 0) {
+      const toolResult = response.toolResults[0]?.result as any;
+
+      if (toolResult?.action === "talk") {
+        customerResponse = toolResult.message;
+      } else if (toolResult?.action === "respond_to_offer") {
+        customerResponse = `${toolResult.message} ${toolResult.accept ? "(ACCEPTS OFFER)" : "(REFUSES OFFER)"}`;
+      } else if (toolResult?.action === "leave_shop") {
+        customerResponse = `${toolResult.message} (LEAVES SHOP)`;
+        conversation.outcome = "customer_left";
+      }
     } else {
-      // Generic response for now
       customerResponse = "Let me think about that...";
     }
 
