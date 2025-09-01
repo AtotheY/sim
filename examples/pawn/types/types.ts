@@ -17,6 +17,12 @@ export interface PawnGameState extends LoopState {
 
   // Transaction history
   trades: Trade[]; // All completed transactions
+
+  // Customer tracking
+  currentCustomerIndex: number; // Which customer we're currently serving
+
+  // Conversation history for analysis
+  conversations: Conversation[]; // All customer conversations
 }
 
 // Customer information (simplified to match spec)
@@ -75,4 +81,24 @@ export interface GameResult {
   profit: number; // finalMoney - startingMoney
   totalTrades: number;
   daysPlayed: number;
+}
+
+// Conversation tracking for analysis
+export interface Conversation {
+  id: string;
+  customerId: string;
+  customerName: string;
+  day: number;
+  customerSetup: {
+    itemToSell: CustomerItem;
+    interestedInBuying: string[];
+  };
+  messages: ConversationMessage[];
+  outcome: "trade_made" | "customer_left" | "ongoing";
+}
+
+export interface ConversationMessage {
+  timestamp: number;
+  sender: "owner" | "customer";
+  message: string;
 }
