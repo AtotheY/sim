@@ -209,8 +209,15 @@ export const lookupItemPrice = tool({
   parameters: z.object({
     itemId: z.string().describe("The ID of the item to look up the price for"),
   }),
-  execute: async ({ itemId }) => ({
-    action: "lookup_item_price" as const,
-    itemId,
-  }),
+  execute: async ({ itemId }) => {
+    const { PAWN_ITEMS, getActualValue } = await import("../types/items");
+
+    const item = PAWN_ITEMS.find((item) => item.id === itemId);
+    if (!item) {
+      return `Item with ID "${itemId}" not found in the catalog.`;
+    }
+
+    const actualValue = getActualValue(item);
+    return `${item.name} (${item.condition}): Market value is $${actualValue}. Description: ${item.description}`;
+  },
 });
