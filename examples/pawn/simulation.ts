@@ -108,11 +108,12 @@ async function runOwnerAgentTurn(state: PawnGameState): Promise<boolean> {
 
   try {
     const response = await generateText({
-      model: openai("gpt-4o"),
+      model: openai("gpt-4o-mini"),
       prompt: gamePrompt,
       tools: ownerTools,
       toolChoice: "auto",
-      temperature: 0.3,
+      maxSteps: 30,
+      temperature: 0.7,
       onStepFinish: (step) => {
         console.log("Step finish:", step.toolCalls, step.toolResults);
       },

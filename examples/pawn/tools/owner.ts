@@ -102,7 +102,7 @@ export const talkToCustomer = tool({
       message: customerResponse,
     });
 
-    return `The customer responds: "${customerResponse}"`;
+    return `The customer responds: "${customerResponse} --- What would you like to do next?"`;
   },
 });
 
