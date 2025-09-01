@@ -119,12 +119,25 @@ Use the available tools to interact with customers and manage your shop. If no c
       temperature: 0.3,
     });
 
-    console.log(
-      `\n🤖 Agent Action: ${response.toolResults?.[0]?.toolName || "No action"}`
-    );
-    if (response.text) {
-      console.log(`Agent reasoning: ${response.text}`);
+    console.log("\n=== FULL RESPONSE DEBUG ===");
+    console.log("Finish reason:", response.finishReason);
+    console.log("Response text:", response.text);
+    console.log("Tool calls:", response.toolCalls?.length || 0);
+    console.log("Tool results:", response.toolResults?.length || 0);
+
+    if (response.toolCalls) {
+      response.toolCalls.forEach((call, i) => {
+        console.log(`Tool call ${i + 1}:`, call.toolName, call.args);
+      });
     }
+
+    if (response.toolResults) {
+      response.toolResults.forEach((result, i) => {
+        console.log(`Tool result ${i + 1}:`, result.toolName, result.result);
+      });
+    }
+
+    console.log("=== END DEBUG ===\n");
 
     return true;
   } catch (error) {
@@ -165,12 +178,7 @@ export async function runPawnSimulation(): Promise<GameResult> {
         return false;
       }
 
-      // Handle day transitions if no customers left
-      if (state.currentCustomerIndex >= state.currentCustomers.length) {
-        handleDayTransition(state);
-      }
-
-      // Run owner agent turn
+      // Run owner agent turn (agent will handle day transitions via goToNextDay tool)
       const shouldContinue = await runOwnerAgentTurn(state);
 
       return shouldContinue;
@@ -188,6 +196,7 @@ export async function runPawnSimulation(): Promise<GameResult> {
             : "SIMULATION_ENDED";
 
       console.log(`\n🏁 Pawn Shop Simulation Results:`);
+      console.log({ endReason });
       console.log(`📅 Days completed: ${state.day - 1}`);
       console.log(`💰 Final money: $${state.money}`);
       console.log(`📈 Profit/Loss: ${profit >= 0 ? "+" : ""}$${profit}`);

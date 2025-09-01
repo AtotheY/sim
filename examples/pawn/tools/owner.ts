@@ -139,7 +139,19 @@ export const goToNextDay = tool({
     "Advance to the next day, which brings 2 new customers to the pawn shop",
   parameters: z.object({}),
   execute: async () => {
-    return "You decide to close up shop for the day. Take no further actions and wait for the next day to begin.";
+    const state = getSimState<PawnGameState>();
+
+    // Advance to next day
+    state.day++;
+
+    // Generate new customers for the new day
+    const { generateDailyCustomers } = await import("../helpers/customers");
+    state.currentCustomers = generateDailyCustomers(state.day);
+    state.currentCustomerIndex = 0;
+
+    console.log(`\n📅 Day ${state.day} begins! New customers arrive.`);
+
+    return `Day ${state.day} begins! 2 new customers have arrived at your pawn shop. You now have fresh opportunities to buy and sell items.`;
   },
 });
 
