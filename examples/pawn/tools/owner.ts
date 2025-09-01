@@ -108,7 +108,7 @@ Be realistic about haggling - you want a fair price but won't accept lowball off
       message: customerResponse,
     });
 
-    return `You: "${message}"\n\n${currentCustomer.name}: "${customerResponse}"`;
+    return `The customer responds: "${customerResponse}"`;
   },
 });
 
@@ -231,5 +231,149 @@ export const lookupItemPrice = tool({
 
     const actualValue = getActualValue(item);
     return `${item.name} (${item.condition}): Market value is $${actualValue}. Description: ${item.description}`;
+  },
+});
+
+export const makeOffer = tool({
+  description: "Make a price offer to buy an item from the current customer",
+  parameters: z.object({
+    price: z.number().describe("The price you want to offer for their item"),
+  }),
+  execute: async ({ price }) => {
+    const state = getSimState<PawnGameState>();
+
+    const currentCustomer =
+      state.currentCustomers[state.currentCustomerIndex || 0];
+    if (!currentCustomer) {
+      return "No customer is currently available to make an offer to.";
+    }
+
+    if (price > state.money) {
+      return `You don't have enough money. You only have $${state.money} but are offering $${price}.`;
+    }
+
+    // Check if customer accepts the offer
+    const minPrice = currentCustomer.itemToSell.minPrice;
+    const willAccept = price >= minPrice;
+
+    if (willAccept) {
+      // Complete the transaction
+      const item = currentCustomer.itemToSell.item;
+
+      // Add to inventory
+      state.inventory.push({
+        item: item,
+        purchasePrice: price,
+        purchaseDay: state.day,
+        fromCustomer: currentCustomer.name,
+      });
+
+      // Deduct money
+      state.money -= price;
+
+      // Record trade
+      state.trades.push({
+        id: `trade_${Date.now()}`,
+        day: state.day,
+        type: "buy",
+        item: item,
+        price: price,
+        customerName: currentCustomer.name,
+      });
+
+      // Update conversation outcome
+      const conversation = state.conversations.find(
+        (c) => c.customerId === currentCustomer.id
+      );
+      if (conversation) {
+        conversation.outcome = "trade_made";
+        conversation.messages.push({
+          timestamp: Date.now(),
+          sender: "customer",
+          message: `Great! I'll sell you my ${item.name} for $${price}. (TRADE COMPLETED)`,
+        });
+      }
+
+      return `✅ Deal! You bought ${item.name} (${item.condition}) for $${price} from ${currentCustomer.name}. You now have $${state.money} remaining.`;
+    } else {
+      return `❌ ${currentCustomer.name} shakes their head. "Sorry, that's too low for my ${currentCustomer.itemToSell.item.name}. I was hoping for at least $${currentCustomer.itemToSell.maxPrice}."`;
+    }
+  },
+});
+
+export const sellItemToCustomer = tool({
+  description:
+    "Offer to sell an item from your inventory to the current customer",
+  parameters: z.object({
+    inventoryIndex: z
+      .number()
+      .describe("The index of the item in your inventory (starting from 0)"),
+    price: z.number().describe("The price you want to sell it for"),
+  }),
+  execute: async ({ inventoryIndex, price }) => {
+    const state = getSimState<PawnGameState>();
+
+    const currentCustomer =
+      state.currentCustomers[state.currentCustomerIndex || 0];
+    if (!currentCustomer) {
+      return "No customer is currently available to sell to.";
+    }
+
+    if (inventoryIndex >= state.inventory.length || inventoryIndex < 0) {
+      return `Invalid inventory index. You have ${state.inventory.length} items in inventory (indices 0-${state.inventory.length - 1}).`;
+    }
+
+    const inventoryItem = state.inventory[inventoryIndex]!;
+    const isInterested = currentCustomer.interestedInBuying.includes(
+      inventoryItem.item.id
+    );
+
+    if (!isInterested) {
+      return `${currentCustomer.name} doesn't seem interested in the ${inventoryItem.item.name}. They're looking for: ${currentCustomer.interestedInBuying.join(", ")}`;
+    }
+
+    // Simple customer acceptance logic - they'll accept reasonable prices
+    const { getActualValue } = await import("../types/items");
+    const marketValue = getActualValue(inventoryItem.item);
+    const maxCustomerWillPay = marketValue * (0.7 + Math.random() * 0.3); // 70-100% of market value
+
+    if (price <= maxCustomerWillPay) {
+      // Complete the sale
+      const profit = price - inventoryItem.purchasePrice;
+
+      // Add money
+      state.money += price;
+
+      // Remove from inventory
+      state.inventory.splice(inventoryIndex, 1);
+
+      // Record trade
+      state.trades.push({
+        id: `trade_${Date.now()}`,
+        day: state.day,
+        type: "sell",
+        item: inventoryItem.item,
+        price: price,
+        customerName: currentCustomer.name,
+        profit: profit,
+      });
+
+      // Update conversation
+      const conversation = state.conversations.find(
+        (c) => c.customerId === currentCustomer.id
+      );
+      if (conversation) {
+        conversation.outcome = "trade_made";
+        conversation.messages.push({
+          timestamp: Date.now(),
+          sender: "customer",
+          message: `Perfect! I'll buy your ${inventoryItem.item.name} for $${price}. (SALE COMPLETED)`,
+        });
+      }
+
+      return `✅ Sale! You sold ${inventoryItem.item.name} for $${price} to ${currentCustomer.name}. Profit: $${profit}. You now have $${state.money}.`;
+    } else {
+      return `❌ ${currentCustomer.name} thinks $${price} is too expensive for the ${inventoryItem.item.name}. They might pay up to around $${Math.round(maxCustomerWillPay)}.`;
+    }
   },
 });

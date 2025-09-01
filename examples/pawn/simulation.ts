@@ -59,7 +59,7 @@ System:
 
 // Initialize the pawn shop game state
 function initializePawnState(): PawnGameState {
-  return {
+  const initialState = {
     tick: 0,
     day: 1,
     money: GAME_CONFIG.STARTING_MONEY,
@@ -69,6 +69,9 @@ function initializePawnState(): PawnGameState {
     currentCustomerIndex: 0,
     conversations: [],
   };
+
+  console.log(`\n📅 Day ${initialState.day} begins! New customers arrive.`);
+  return initialState;
 }
 
 // Check if the game should end
@@ -98,7 +101,7 @@ async function runOwnerAgentTurn(state: PawnGameState): Promise<boolean> {
       ? "No more customers today"
       : `Current customer: ${currentCustomer?.name}`;
 
-  const gamePrompt = `You are the owner of a pawn shop. 
+  const gamePrompt = `You are the owner of a pawn shop. Your goal is to maximize profit over ${GAME_CONFIG.MAX_DAYS} days.
 
 Current Status:
 - Day ${state.day} of ${GAME_CONFIG.MAX_DAYS}
@@ -106,37 +109,45 @@ Current Status:
 - Inventory: ${state.inventory.length} items
 - ${dayStatus}
 
-Your goal is to maximize profit over ${GAME_CONFIG.MAX_DAYS} days by buying low and selling high.
+Available actions:
+- talkToCustomer: Speak with the current customer to learn about their item
+- lookupItemPrice: Research market value of items by ID
+- makeOffer: Make a price offer to buy their item
+- sellItemToCustomer: Offer to sell an item from your inventory
+- seeNextCustomer: Move to the next customer (when done with current one)
+- goToNextDay: Advance to the next day (when no more customers)
+- viewItems, viewMoney, viewTrades: Check your status
 
-Use the available tools to interact with customers and manage your shop. If no customers are available today, advance to the next day.`;
+Strategy: Talk briefly to understand what customers have, look up item values, then make smart offers. Don't overthink - be decisive!`;
 
   try {
     const response = await generateText({
       model: openai("gpt-4o-mini"),
       prompt: gamePrompt,
       tools: ownerTools,
-      toolChoice: "required",
+      toolChoice: "auto",
       temperature: 0.3,
     });
 
-    console.log("\n=== FULL RESPONSE DEBUG ===");
+    console.log("\n=== RESPONSE DEBUG ===");
     console.log("Finish reason:", response.finishReason);
-    console.log("Response text:", response.text);
     console.log("Tool calls:", response.toolCalls?.length || 0);
-    console.log("Tool results:", response.toolResults?.length || 0);
-
     if (response.toolCalls) {
       response.toolCalls.forEach((call, i) => {
         console.log(`Tool call ${i + 1}:`, call.toolName, call.args);
       });
     }
-
     if (response.toolResults) {
       response.toolResults.forEach((result, i) => {
-        console.log(`Tool result ${i + 1}:`, result.toolName, result.result);
+        console.log(
+          `Tool result ${i + 1}:`,
+          result.toolName,
+          typeof result.result === "string"
+            ? result.result.slice(0, 100) + "..."
+            : result.result
+        );
       });
     }
-
     console.log("=== END DEBUG ===\n");
 
     return true;
@@ -144,14 +155,6 @@ Use the available tools to interact with customers and manage your shop. If no c
     console.error("❌ Error running agent turn:", error);
     return false;
   }
-}
-
-// Handle day transitions
-function handleDayTransition(state: PawnGameState): void {
-  state.day++;
-  state.currentCustomers = generateDailyCustomers(state.day);
-  state.currentCustomerIndex = 0;
-  console.log(`\n📅 Day ${state.day} begins! New customers arrive.`);
 }
 
 // Main pawn shop simulation
@@ -178,8 +181,25 @@ export async function runPawnSimulation(): Promise<GameResult> {
         return false;
       }
 
-      // Run owner agent turn (agent will handle day transitions via goToNextDay tool)
+      // Run owner agent turn
       const shouldContinue = await runOwnerAgentTurn(state);
+
+      // After every agent turn, advance to the next day with new customers
+      state.day++;
+
+      // Check if we've reached max days after advancing
+      if (state.day > GAME_CONFIG.MAX_DAYS) {
+        console.log(
+          `\n🏁 Max days (${GAME_CONFIG.MAX_DAYS}) reached, ending simulation`
+        );
+        return false;
+      }
+
+      // Generate new customers for the new day
+      state.currentCustomers = generateDailyCustomers(state.day);
+      state.currentCustomerIndex = 0;
+
+      console.log(`🗓️ Advanced to Day ${state.day} - New customers generated!`);
 
       return shouldContinue;
     },

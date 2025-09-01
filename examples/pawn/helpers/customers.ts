@@ -53,7 +53,7 @@ export function generateDailyCustomers(day: number): Customer[] {
 
 // Generate a single customer
 function generateCustomer(day: number, customerIndex: number): Customer {
-  const customerId = `day_${day}_customer_${customerIndex + 1}`;
+  const customerId = `day_${day}_customer_${customerIndex + 1}_${Date.now()}_${Math.random()}`;
   const name = getRandomCustomerName();
 
   // Customer wants to sell one item
@@ -61,6 +61,8 @@ function generateCustomer(day: number, customerIndex: number): Customer {
 
   // Customer is interested in buying a subset of available items
   const interestedInBuying = generateBuyingInterests();
+
+  console.log(`🧑 Generated customer: ${name} (${customerId}) on day ${day}`);
 
   return {
     id: customerId,
