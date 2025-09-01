@@ -1,11 +1,9 @@
 import { createSimulation } from "../../lib/simulation";
 import { setSimState, clearSimState } from "../../lib/state";
 import { generateDailyCustomers } from "./helpers/customers";
-import {
-  type PawnGameState,
-  GAME_CONFIG,
-  type GameResult,
-} from "./types/types";
+import { type PawnGameState, type GameResult } from "./types/types";
+import { GAME_CONFIG } from "./config";
+import { createOwnerPrompt } from "./prompts";
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import * as ownerTools from "./tools/owner";
@@ -101,32 +99,23 @@ async function runOwnerAgentTurn(state: PawnGameState): Promise<boolean> {
       ? "No more customers today"
       : `Current customer: ${currentCustomer?.name}`;
 
-  const gamePrompt = `You are the owner of a pawn shop. Your goal is to maximize profit over ${GAME_CONFIG.MAX_DAYS} days.
-
-Current Status:
-- Day ${state.day} of ${GAME_CONFIG.MAX_DAYS}
-- Money: $${state.money}
-- Inventory: ${state.inventory.length} items
-- ${dayStatus}
-
-Available actions:
-- talkToCustomer: Speak with the current customer to learn about their item
-- lookupItemPrice: Research market value of items by ID
-- makeOffer: Make a price offer to buy their item
-- sellItemToCustomer: Offer to sell an item from your inventory
-- seeNextCustomer: Move to the next customer (when done with current one)
-- goToNextDay: Advance to the next day (when no more customers)
-- viewItems, viewMoney, viewTrades: Check your status
-
-Strategy: Talk briefly to understand what customers have, look up item values, then make smart offers. Don't overthink - be decisive!`;
+  const gamePrompt = createOwnerPrompt({
+    day: state.day,
+    money: state.money,
+    inventoryCount: state.inventory.length,
+    dayStatus,
+  });
 
   try {
     const response = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: openai("gpt-4o"),
       prompt: gamePrompt,
       tools: ownerTools,
       toolChoice: "auto",
       temperature: 0.3,
+      onStepFinish: (step) => {
+        console.log("Step finish:", step.toolCalls, step.toolResults);
+      },
     });
 
     console.log("\n=== RESPONSE DEBUG ===");
@@ -139,13 +128,7 @@ Strategy: Talk briefly to understand what customers have, look up item values, t
     }
     if (response.toolResults) {
       response.toolResults.forEach((result, i) => {
-        console.log(
-          `Tool result ${i + 1}:`,
-          result.toolName,
-          typeof result.result === "string"
-            ? result.result.slice(0, 100) + "..."
-            : result.result
-        );
+        console.log(`Tool result ${i + 1}:`, result.toolName, result.result);
       });
     }
     console.log("=== END DEBUG ===\n");
@@ -162,7 +145,7 @@ export async function runPawnSimulation(): Promise<GameResult> {
   const initialState = initializePawnState();
 
   const simulation = createSimulation<PawnGameState>({
-    maxTicks: 100, // Prevent infinite loops
+    maxTicks: GAME_CONFIG.MAX_TICKS,
     initialState,
 
     onTick: async (state) => {

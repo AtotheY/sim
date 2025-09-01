@@ -1,4 +1,5 @@
-import { type Customer, type CustomerItem, GAME_CONFIG } from "../types/types";
+import { type Customer, type CustomerItem } from "../types/types";
+import { GAME_CONFIG } from "../config";
 import {
   PAWN_ITEMS,
   getRandomItems,

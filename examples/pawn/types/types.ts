@@ -63,13 +63,8 @@ export interface Trade {
   profit?: number; // Only for sales (sell price - purchase price)
 }
 
-// Game configuration constants
-export const GAME_CONFIG = {
-  STARTING_MONEY: 10000,
-  MAX_DAYS: 5,
-  CUSTOMERS_PER_DAY: 2,
-  MIN_MONEY_TO_CONTINUE: 0, // Game over if money hits this
-} as const;
+// Import game configuration from config file
+export { GAME_CONFIG } from "../config";
 
 // End game conditions
 export type GameEndReason = "out_of_money" | "max_days_reached";

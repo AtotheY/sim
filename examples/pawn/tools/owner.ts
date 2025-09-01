@@ -3,7 +3,9 @@ import { z } from "zod";
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { getSimState } from "../../../lib/state";
-import { type PawnGameState, GAME_CONFIG } from "../types/types";
+import { type PawnGameState } from "../types/types";
+import { GAME_CONFIG } from "../config";
+import { createCustomerPrompt } from "../prompts";
 import * as customerTools from "./customer";
 
 export const talkToCustomer = tool({
@@ -56,25 +58,17 @@ export const talkToCustomer = tool({
       )
       .join("\n");
 
-    const customerPrompt = `You are ${currentCustomer.name}, a customer in a pawn shop. 
-
-Your character:
-- You want to sell: ${currentCustomer.itemToSell.item.name} (${currentCustomer.itemToSell.item.condition}) - ${currentCustomer.itemToSell.item.description}
-- Your minimum acceptable price: $${currentCustomer.itemToSell.minPrice} (don't reveal this easily)
-- Your asking price: $${currentCustomer.itemToSell.maxPrice}
-- You're also interested in buying these items if the owner has them: ${currentCustomer.interestedInBuying.join(", ")}
-
-Conversation so far:
-${conversationHistory}
-
-The pawn shop owner just said: "${message}"
-
-Use the available tools to respond. You can:
-- talk: Send a message to continue the conversation
-- respondToOffer: Accept or refuse a specific price offer
-- leaveShop: Leave if you're not satisfied
-
-Be realistic about haggling - you want a fair price but won't accept lowball offers below your minimum.`;
+    const customerPrompt = createCustomerPrompt({
+      customerName: currentCustomer.name,
+      itemName: currentCustomer.itemToSell.item.name,
+      itemCondition: currentCustomer.itemToSell.item.condition,
+      itemDescription: currentCustomer.itemToSell.item.description,
+      minPrice: currentCustomer.itemToSell.minPrice,
+      maxPrice: currentCustomer.itemToSell.maxPrice,
+      interestedInBuying: currentCustomer.interestedInBuying,
+      conversationHistory,
+      ownerMessage: message,
+    });
 
     const response = await generateText({
       model: openai("gpt-4o-mini"),
