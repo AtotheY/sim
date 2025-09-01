@@ -12,20 +12,42 @@ export const talk = tool({
   }),
 });
 
-export const respondToOffer = tool({
-  description: "Respond to a price offer from the pawn shop owner",
+export const acceptSellOffer = tool({
+  description: "Accept an offer to sell your item to the pawn shop owner",
   parameters: z.object({
-    accept: z
-      .boolean()
-      .describe("Whether to accept the offer (true) or refuse it (false)"),
-    message: z
-      .string()
-      .describe("What you want to say when accepting or refusing"),
+    message: z.string().describe("What you want to say when accepting"),
+    priceOffered: z.number().describe("The price that was offered to you"),
   }),
-  execute: async ({ accept, message }) => ({
-    action: "respond_to_offer" as const,
-    accept,
+  execute: async ({ message, priceOffered }) => ({
+    action: "accept_sell_offer" as const,
     message,
+    priceOffered,
+  }),
+});
+
+export const refuseOffer = tool({
+  description: "Refuse an offer from the pawn shop owner",
+  parameters: z.object({
+    message: z.string().describe("What you want to say when refusing"),
+  }),
+  execute: async ({ message }) => ({
+    action: "refuse_offer" as const,
+    message,
+  }),
+});
+
+export const acceptBuyOffer = tool({
+  description: "Accept an offer to buy an item from the pawn shop owner",
+  parameters: z.object({
+    message: z.string().describe("What you want to say when accepting"),
+    priceOffered: z.number().describe("The price being offered for the item"),
+    itemName: z.string().describe("The name of the item you're buying"),
+  }),
+  execute: async ({ message, priceOffered, itemName }) => ({
+    action: "accept_buy_offer" as const,
+    message,
+    priceOffered,
+    itemName,
   }),
 });
 
