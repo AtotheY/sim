@@ -1,4 +1,9 @@
-import { type Customer, type CustomerItem } from "../types/types";
+import {
+  type Customer,
+  type CustomerItem,
+  type CustomerPersonality,
+  type CustomerBuyingInterest,
+} from "../types/types";
 import { GAME_CONFIG } from "../config";
 import {
   PAWN_ITEMS,
@@ -56,11 +61,12 @@ export function generateDailyCustomers(day: number): Customer[] {
 function generateCustomer(day: number, customerIndex: number): Customer {
   const customerId = `day_${day}_customer_${customerIndex + 1}_${Date.now()}_${Math.random()}`;
   const name = getRandomCustomerName();
+  const personality = getRandomPersonality();
 
   // Customer wants to sell one item
   const itemToSell = generateCustomerItem();
 
-  // Customer is interested in buying a subset of available items
+  // Customer is interested in buying 15 specific items with max prices
   const interestedInBuying = generateBuyingInterests();
 
   console.log(`🧑 Generated customer: ${name} (${customerId}) on day ${day}`);
@@ -68,6 +74,7 @@ function generateCustomer(day: number, customerIndex: number): Customer {
   return {
     id: customerId,
     name,
+    personality,
     itemToSell,
     interestedInBuying,
   };
@@ -98,13 +105,34 @@ function generateCustomerItem(): CustomerItem {
   };
 }
 
-// Generate list of items customer might be interested in buying
-function generateBuyingInterests(): string[] {
-  // Customer is interested in 2-8 different items
-  const interestCount = 2 + Math.floor(Math.random() * 7);
-  const interestedItems = getRandomItems(interestCount);
+// Generate list of items customer might be interested in buying with max prices
+function generateBuyingInterests(): CustomerBuyingInterest[] {
+  // Customer is interested in exactly 15 different items
+  const interestedItems = getRandomItems(15);
 
-  return interestedItems.map((item) => item.id);
+  return interestedItems.map((item) => {
+    const marketValue = getActualValue(item);
+    // Customer willing to pay 60-110% of market value
+    const maxPrice = Math.round(marketValue * (0.6 + Math.random() * 0.5));
+
+    return {
+      itemId: item.id,
+      maxPrice: maxPrice,
+    };
+  });
+}
+
+// Get random personality
+function getRandomPersonality(): CustomerPersonality {
+  const personalities: CustomerPersonality[] = [
+    "patient",
+    "aggressive",
+    "reasonable",
+    "touchy",
+    "shrewd",
+  ];
+  const randomIndex = Math.floor(Math.random() * personalities.length);
+  return personalities[randomIndex]!;
 }
 
 // Get a random item from the full catalog
@@ -124,7 +152,20 @@ export function isCustomerInterestedInItem(
   customer: Customer,
   itemId: string
 ): boolean {
-  return customer.interestedInBuying.includes(itemId);
+  return customer.interestedInBuying.some(
+    (interest) => interest.itemId === itemId
+  );
+}
+
+// Helper function to get customer's max price for a specific item
+export function getCustomerMaxPriceForItem(
+  customer: Customer,
+  itemId: string
+): number | null {
+  const interest = customer.interestedInBuying.find(
+    (interest) => interest.itemId === itemId
+  );
+  return interest ? interest.maxPrice : null;
 }
 
 // Helper function to get customer's price range for their selling item

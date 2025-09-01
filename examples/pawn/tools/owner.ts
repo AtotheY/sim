@@ -60,13 +60,16 @@ export const talkToCustomer = tool({
 
     const customerPrompt = createCustomerPrompt({
       customerName: currentCustomer.name,
+      personality: currentCustomer.personality,
       itemId: currentCustomer.itemToSell.item.id,
       itemName: currentCustomer.itemToSell.item.name,
       itemCondition: currentCustomer.itemToSell.item.condition,
       itemDescription: currentCustomer.itemToSell.item.description,
       minPrice: currentCustomer.itemToSell.minPrice,
       maxPrice: currentCustomer.itemToSell.maxPrice,
-      interestedInBuying: currentCustomer.interestedInBuying,
+      interestedInBuying: currentCustomer.interestedInBuying.map(
+        (interest) => interest.itemId
+      ),
       conversationHistory,
       ownerMessage: message,
     });
@@ -77,6 +80,14 @@ export const talkToCustomer = tool({
       tools: customerTools,
       toolChoice: "required",
       temperature: 0.7,
+      maxSteps: 10,
+      onStepFinish: (step) => {
+        console.log(
+          "Customer step finished:",
+          step.toolCalls,
+          step.toolResults
+        );
+      },
     });
 
     // Process the customer's tool result
@@ -132,25 +143,41 @@ export const talkToCustomer = tool({
           customerResponse = `${toolResult.message} ❌ Sorry, we don't actually have that item anymore!`;
         } else {
           const inventoryItem = state.inventory[inventoryIndex]!;
-          const profit = price - inventoryItem.purchasePrice;
 
-          // Complete the sale
-          state.money += price;
-          state.inventory.splice(inventoryIndex, 1);
+          // Check if customer is actually interested in this item and can afford it
+          const { getCustomerMaxPriceForItem } = await import(
+            "../helpers/customers"
+          );
+          const maxPrice = getCustomerMaxPriceForItem(
+            currentCustomer,
+            inventoryItem.item.id
+          );
 
-          // Record trade
-          state.trades.push({
-            id: `trade_${Date.now()}`,
-            day: state.day,
-            type: "sell",
-            item: inventoryItem.item,
-            price: price,
-            customerName: currentCustomer.name,
-            profit: profit,
-          });
+          if (maxPrice === null) {
+            customerResponse = `${toolResult.message} ❌ Wait, I'm actually not interested in that item.`;
+          } else if (price > maxPrice) {
+            customerResponse = `${toolResult.message} ❌ Actually, that's more than I can afford. My max budget for that is $${maxPrice}.`;
+          } else {
+            const profit = price - inventoryItem.purchasePrice;
 
-          conversation.outcome = "trade_made";
-          customerResponse = `${toolResult.message} ✅ SALE COMPLETED! You sold ${itemName} for $${price}. Profit: $${profit}. You now have $${state.money}.`;
+            // Complete the sale
+            state.money += price;
+            state.inventory.splice(inventoryIndex, 1);
+
+            // Record trade
+            state.trades.push({
+              id: `trade_${Date.now()}`,
+              day: state.day,
+              type: "sell",
+              item: inventoryItem.item,
+              price: price,
+              customerName: currentCustomer.name,
+              profit: profit,
+            });
+
+            conversation.outcome = "trade_made";
+            customerResponse = `${toolResult.message} ✅ SALE COMPLETED! You sold ${itemName} for $${price}. Profit: $${profit}. You now have $${state.money}.`;
+          }
         }
       } else if (toolResult?.action === "refuse_offer") {
         customerResponse = `${toolResult.message} ❌ (REFUSES OFFER)`;
@@ -169,7 +196,15 @@ export const talkToCustomer = tool({
       message: customerResponse,
     });
 
-    return `The customer responds: "${customerResponse} --- What would you like to do next?"`;
+    // Calculate remaining customers
+    const remainingCustomers =
+      state.currentCustomers.length - (state.currentCustomerIndex || 0) - 1;
+    const queueInfo =
+      remainingCustomers > 0
+        ? ` --- (${remainingCustomers} customers waiting in line)`
+        : " --- (No more customers after this one)";
+
+    return `The customer responds: "${customerResponse}${queueInfo}"`;
   },
 });
 

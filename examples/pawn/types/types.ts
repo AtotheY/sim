@@ -25,16 +25,31 @@ export interface PawnGameState extends LoopState {
   conversations: Conversation[]; // All customer conversations
 }
 
+// Customer personality types
+export type CustomerPersonality =
+  | "patient"
+  | "aggressive"
+  | "reasonable"
+  | "touchy"
+  | "shrewd";
+
+// Items customer wants to buy with max prices
+export interface CustomerBuyingInterest {
+  itemId: string;
+  maxPrice: number; // Secret - how much they're willing to pay
+}
+
 // Customer information (simplified to match spec)
 export interface Customer {
   id: string;
   name: string;
+  personality: CustomerPersonality;
 
   // What they want to sell
   itemToSell: CustomerItem;
 
-  // What they might buy (subset of items they're interested in)
-  interestedInBuying: string[]; // Item IDs they might purchase
+  // What they might buy (15 items with max prices they're willing to pay)
+  interestedInBuying: CustomerBuyingInterest[];
 }
 
 // Items in the pawn shop's inventory
@@ -86,7 +101,7 @@ export interface Conversation {
   day: number;
   customerSetup: {
     itemToSell: CustomerItem;
-    interestedInBuying: string[];
+    interestedInBuying: CustomerBuyingInterest[];
   };
   messages: ConversationMessage[];
   outcome: "trade_made" | "customer_left" | "ongoing";

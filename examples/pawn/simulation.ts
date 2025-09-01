@@ -1,6 +1,10 @@
 import { createSimulation } from "../../lib/simulation";
 import { setSimState, clearSimState } from "../../lib/state";
-import { generateDailyCustomers } from "./helpers/customers";
+import {
+  generateDailyCustomers,
+  displayDayLedger,
+  checkGameEndConditions,
+} from "./helpers";
 import { type PawnGameState, type GameResult } from "./types/types";
 import { GAME_CONFIG } from "./config";
 import { createOwnerPrompt } from "./prompts";
@@ -72,74 +76,6 @@ function initializePawnState(): PawnGameState {
   return initialState;
 }
 
-// Check if the game should end
-function checkGameEndConditions(state: PawnGameState): {
-  ended: boolean;
-  reason?: string;
-} {
-  // Out of money
-  if (state.money <= 0) {
-    return { ended: true, reason: "OUT_OF_MONEY" };
-  }
-
-  // Max days reached
-  if (state.day > GAME_CONFIG.MAX_DAYS) {
-    return { ended: true, reason: "MAX_DAYS_REACHED" };
-  }
-
-  return { ended: false };
-}
-
-// Display end-of-day ledger
-function displayDayLedger(state: PawnGameState): void {
-  const dayTrades = state.trades.filter((t) => t.day === state.day);
-  const purchases = dayTrades.filter((t) => t.type === "buy");
-  const sales = dayTrades.filter((t) => t.type === "sell");
-
-  const totalPurchases = purchases.reduce((sum, t) => sum + t.price, 0);
-  const totalSales = sales.reduce((sum, t) => sum + t.price, 0);
-  const dailyProfit = totalSales - totalPurchases;
-
-  console.log(`\n📊 === END OF DAY ${state.day} LEDGER ===`);
-  console.log(
-    `💰 Starting Money: $${GAME_CONFIG.STARTING_MONEY + state.trades.filter((t) => t.day < state.day).reduce((sum, t) => sum + (t.type === "sell" ? t.price : -t.price), 0)}`
-  );
-  console.log(
-    `📦 Starting Inventory: ${state.inventory.length - purchases.length + sales.length} items`
-  );
-
-  if (purchases.length > 0) {
-    console.log(`\n🛒 PURCHASES (${purchases.length}):`);
-    purchases.forEach((trade) => {
-      console.log(
-        `  • ${trade.item.name} - $${trade.price} from ${trade.customerName}`
-      );
-    });
-    console.log(`  Total Spent: $${totalPurchases}`);
-  }
-
-  if (sales.length > 0) {
-    console.log(`\n💸 SALES (${sales.length}):`);
-    sales.forEach((trade) => {
-      console.log(
-        `  • ${trade.item.name} - $${trade.price} to ${trade.customerName} (profit: $${trade.profit || 0})`
-      );
-    });
-    console.log(`  Total Revenue: $${totalSales}`);
-  }
-
-  if (purchases.length === 0 && sales.length === 0) {
-    console.log(`❌ No transactions today`);
-  }
-
-  console.log(
-    `\n📈 Daily Profit/Loss: ${dailyProfit >= 0 ? "+" : ""}$${dailyProfit}`
-  );
-  console.log(`💰 Ending Money: $${state.money}`);
-  console.log(`📦 Ending Inventory: ${state.inventory.length} items`);
-  console.log(`===============================\n`);
-}
-
 // Run the owner AI agent for one turn
 async function runOwnerAgentTurn(state: PawnGameState): Promise<boolean> {
   const currentCustomer =
@@ -164,9 +100,6 @@ async function runOwnerAgentTurn(state: PawnGameState): Promise<boolean> {
       toolChoice: "auto",
       maxSteps: 30,
       temperature: 0.7,
-      onStepFinish: (step) => {
-        console.log("Step finish:", step.toolCalls, step.toolResults);
-      },
     });
 
     console.log("\n=== RESPONSE DEBUG ===");
