@@ -49,7 +49,7 @@ export const acceptSellOffer = tool({
       message,
       priceOffered,
     };
-    logToolResult("customer", "acceptSellOffer");
+    logToolResult("acceptSellOffer", result);
     return result;
   },
 });
@@ -66,7 +66,7 @@ export const refuseOffer = tool({
       action: "refuse_offer" as const,
       message,
     };
-    logToolResult("customer", "refuseOffer");
+    logToolResult("refuseOffer", result);
     return result;
   },
 });
@@ -96,7 +96,7 @@ export const acceptBuyOffer = tool({
       priceOffered,
       itemName,
     };
-    logToolResult("customer", "acceptBuyOffer");
+    logToolResult("acceptBuyOffer", result);
     return result;
   },
 });
@@ -113,7 +113,7 @@ export const leaveShop = tool({
       action: "leave_shop" as const,
       message,
     };
-    logToolResult("customer", "leaveShop");
+    logToolResult("leaveShop", result);
     return result;
   },
 });

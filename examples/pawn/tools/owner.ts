@@ -256,7 +256,7 @@ export const seeNextCustomer = tool({
     if (nextIndex >= state.currentCustomers.length) {
       const result =
         "No more customers today. You can close up shop and go to the next day.";
-      logToolResult("owner", "seeNextCustomer");
+      logToolResult("seeNextCustomer", result);
       return result;
     }
 
@@ -265,7 +265,7 @@ export const seeNextCustomer = tool({
     const nextCustomer = state.currentCustomers[nextIndex];
 
     const result = `A new customer enters your pawn shop: ${nextCustomer?.name}. They look around browsing your items.`;
-    logToolResult("owner", "seeNextCustomer");
+    logToolResult("seeNextCustomer", result);
     return result;
   },
 });
@@ -289,7 +289,7 @@ export const goToNextDay = tool({
     console.log(`\n📅 Day ${state.day} begins! New customers arrive.`);
 
     const result = `Day ${state.day} begins! 2 new customers have arrived at your pawn shop. You now have fresh opportunities to buy and sell items.`;
-    logToolResult("owner", "goToNextDay");
+    logToolResult("goToNextDay", result);
     return result;
   },
 });
@@ -303,7 +303,7 @@ export const viewItems = tool({
 
     if (state.inventory.length === 0) {
       const result = "Your inventory is empty.";
-      logToolResult("owner", "viewItems");
+      logToolResult("viewItems", result);
       return result;
     }
 
@@ -315,7 +315,7 @@ export const viewItems = tool({
       .join("\n");
 
     const result = `Your pawn shop inventory (${state.inventory.length} items):\n${inventoryList}`;
-    logToolResult("owner", "viewItems");
+    logToolResult("viewItems", result);
     return result;
   },
 });
@@ -331,7 +331,7 @@ export const viewMoney = tool({
       profit >= 0 ? `profit of $${profit}` : `loss of $${Math.abs(profit)}`;
 
     const result = `You currently have $${state.money}. You started with $${GAME_CONFIG.STARTING_MONEY}, so you have a ${profitText}.`;
-    logToolResult("owner", "viewMoney");
+    logToolResult("viewMoney", result);
     return result;
   },
 });
@@ -345,7 +345,7 @@ export const viewTrades = tool({
 
     if (state.trades.length === 0) {
       const result = "You haven't made any trades yet.";
-      logToolResult("owner", "viewTrades");
+      logToolResult("viewTrades", result);
       return result;
     }
 
@@ -363,7 +363,7 @@ export const viewTrades = tool({
       .join("\n");
 
     const result = `Trade History (${state.trades.length} total trades):\n${tradesList}\n\nSummary: ${totalBought} purchases, ${totalSold} sales, $${totalProfit} total profit`;
-    logToolResult("owner", "viewTrades");
+    logToolResult("viewTrades", result);
     return result;
   },
 });
@@ -380,13 +380,13 @@ export const lookupItemPrice = tool({
     const item = PAWN_ITEMS.find((item) => item.id === itemId);
     if (!item) {
       const result = `Item with ID "${itemId}" not found in the catalog.`;
-      logToolResult("owner", "lookupItemPrice");
+      logToolResult("lookupItemPrice", result);
       return result;
     }
 
     const actualValue = getActualValue(item);
     const result = `${item.name} (${item.condition}): Market value is $${actualValue}. Description: ${item.description}`;
-    logToolResult("owner", "lookupItemPrice");
+    logToolResult("lookupItemPrice", result);
     return result;
   },
 });

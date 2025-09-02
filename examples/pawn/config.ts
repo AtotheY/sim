@@ -6,7 +6,7 @@
 
 export const GAME_CONFIG = {
   // Economic settings
-  STARTING_MONEY: 10000,
+  STARTING_MONEY: 1000,
   MIN_MONEY_TO_CONTINUE: 0, // Game over if money hits this
   // Time settings
   MAX_DAYS: 7,
