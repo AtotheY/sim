@@ -9,9 +9,9 @@ export const GAME_CONFIG = {
   STARTING_MONEY: 10000,
   MIN_MONEY_TO_CONTINUE: 0, // Game over if money hits this
   // Time settings
-  MAX_DAYS: 1,
+  MAX_DAYS: 5,
   // Customer settings
-  CUSTOMERS_PER_DAY: 2,
+  CUSTOMERS_PER_DAY: 5,
   // Simulation settings
   MAX_TICKS: 100, // Prevent infinite loops in simulation
 } as const;

@@ -50,3 +50,37 @@ export function displayDayLedger(state: PawnGameState): void {
   console.log(`📦 Ending Inventory: ${state.inventory.length} items`);
   console.log(`===============================\n`);
 }
+
+// Log tool calls from agents
+export function logToolCall(
+  agentType: string,
+  toolName: string,
+  params: any,
+  agentName?: string
+): void {
+  const emoji = agentType === "owner" ? "🏪" : "👤";
+  const name = agentName || (agentType === "owner" ? "Owner" : "Customer");
+
+  console.log(`
+${emoji} ${name} (${toolName}):`);
+  if (params.message) {
+    console.log(params.message);
+  } else if (Object.keys(params).length > 0) {
+    console.log(`  📥 Input: ${JSON.stringify(params)}`);
+  } else {
+    console.log(`  📥 Input: (no parameters)`);
+  }
+}
+
+// Log tool results for non-talk tools
+export function logToolResult(toolName: string, result: any): void {
+  // Only log results for non-talk tools
+  if (toolName === "talk" || toolName === "talkToCustomer") {
+    return;
+  }
+
+  const resultStr =
+    typeof result === "string" ? result : JSON.stringify(result);
+
+  console.log(`  📤 Output: ${resultStr}`);
+}

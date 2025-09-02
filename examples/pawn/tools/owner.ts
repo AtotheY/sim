@@ -7,6 +7,7 @@ import { type PawnGameState } from "../types/types";
 import { GAME_CONFIG } from "../config";
 import { createCustomerPrompt } from "../prompts";
 import * as customerTools from "./customer";
+import { logToolCall, logToolResult } from "../helpers/logging";
 
 export const talkToCustomer = tool({
   description:
@@ -15,6 +16,7 @@ export const talkToCustomer = tool({
     message: z.string().describe("What you want to say to the customer"),
   }),
   execute: async ({ message }) => {
+    logToolCall("owner", "talkToCustomer", { message }, "Owner");
     const state = getSimState<PawnGameState>();
 
     const currentCustomer =
@@ -80,14 +82,7 @@ export const talkToCustomer = tool({
       tools: customerTools,
       toolChoice: "required",
       temperature: 0.7,
-      maxSteps: 10,
-      onStepFinish: (step) => {
-        console.log(
-          "Customer step finished:",
-          step.toolCalls,
-          step.toolResults
-        );
-      },
+      maxSteps: 1,
     });
 
     // Process the customer's tool result
@@ -213,20 +208,26 @@ export const seeNextCustomer = tool({
     "Move to see the next customer if available, or get told no more customers today",
   parameters: z.object({}),
   execute: async () => {
+    logToolCall("owner", "seeNextCustomer", {}, "Owner");
     const state = getSimState<PawnGameState>();
 
     // Move to next customer
     const nextIndex = (state.currentCustomerIndex || 0) + 1;
 
     if (nextIndex >= state.currentCustomers.length) {
-      return "No more customers today. You can close up shop and go to the next day.";
+      const result =
+        "No more customers today. You can close up shop and go to the next day.";
+      logToolResult("owner", "seeNextCustomer");
+      return result;
     }
 
     // Update to next customer
     state.currentCustomerIndex = nextIndex;
     const nextCustomer = state.currentCustomers[nextIndex];
 
-    return `A new customer enters your pawn shop: ${nextCustomer?.name}. They look around browsing your items.`;
+    const result = `A new customer enters your pawn shop: ${nextCustomer?.name}. They look around browsing your items.`;
+    logToolResult("owner", "seeNextCustomer");
+    return result;
   },
 });
 
@@ -235,6 +236,7 @@ export const goToNextDay = tool({
     "Advance to the next day, which brings 2 new customers to the pawn shop",
   parameters: z.object({}),
   execute: async () => {
+    logToolCall("owner", "goToNextDay", {}, "Owner");
     const state = getSimState<PawnGameState>();
 
     // Advance to next day
@@ -247,7 +249,9 @@ export const goToNextDay = tool({
 
     console.log(`\n📅 Day ${state.day} begins! New customers arrive.`);
 
-    return `Day ${state.day} begins! 2 new customers have arrived at your pawn shop. You now have fresh opportunities to buy and sell items.`;
+    const result = `Day ${state.day} begins! 2 new customers have arrived at your pawn shop. You now have fresh opportunities to buy and sell items.`;
+    logToolResult("owner", "goToNextDay");
+    return result;
   },
 });
 
@@ -255,10 +259,13 @@ export const viewItems = tool({
   description: "View all items currently in your pawn shop inventory",
   parameters: z.object({}),
   execute: async () => {
+    logToolCall("owner", "viewItems", {}, "Owner");
     const state = getSimState<PawnGameState>();
 
     if (state.inventory.length === 0) {
-      return "Your inventory is empty.";
+      const result = "Your inventory is empty.";
+      logToolResult("owner", "viewItems");
+      return result;
     }
 
     const inventoryList = state.inventory
@@ -268,7 +275,9 @@ export const viewItems = tool({
       )
       .join("\n");
 
-    return `Your pawn shop inventory (${state.inventory.length} items):\n${inventoryList}`;
+    const result = `Your pawn shop inventory (${state.inventory.length} items):\n${inventoryList}`;
+    logToolResult("owner", "viewItems");
+    return result;
   },
 });
 
@@ -276,12 +285,15 @@ export const viewMoney = tool({
   description: "Check your current cash amount and profit/loss",
   parameters: z.object({}),
   execute: async () => {
+    logToolCall("owner", "viewMoney", {}, "Owner");
     const state = getSimState<PawnGameState>();
     const profit = state.money - GAME_CONFIG.STARTING_MONEY;
     const profitText =
       profit >= 0 ? `profit of $${profit}` : `loss of $${Math.abs(profit)}`;
 
-    return `You currently have $${state.money}. You started with $${GAME_CONFIG.STARTING_MONEY}, so you have a ${profitText}.`;
+    const result = `You currently have $${state.money}. You started with $${GAME_CONFIG.STARTING_MONEY}, so you have a ${profitText}.`;
+    logToolResult("owner", "viewMoney");
+    return result;
   },
 });
 
@@ -289,10 +301,13 @@ export const viewTrades = tool({
   description: "Review all trades (purchases and sales) made up to this point",
   parameters: z.object({}),
   execute: async () => {
+    logToolCall("owner", "viewTrades", {}, "Owner");
     const state = getSimState<PawnGameState>();
 
     if (state.trades.length === 0) {
-      return "You haven't made any trades yet.";
+      const result = "You haven't made any trades yet.";
+      logToolResult("owner", "viewTrades");
+      return result;
     }
 
     const totalBought = state.trades.filter((t) => t.type === "buy").length;
@@ -308,7 +323,9 @@ export const viewTrades = tool({
       )
       .join("\n");
 
-    return `Trade History (${state.trades.length} total trades):\n${tradesList}\n\nSummary: ${totalBought} purchases, ${totalSold} sales, $${totalProfit} total profit`;
+    const result = `Trade History (${state.trades.length} total trades):\n${tradesList}\n\nSummary: ${totalBought} purchases, ${totalSold} sales, $${totalProfit} total profit`;
+    logToolResult("owner", "viewTrades");
+    return result;
   },
 });
 
@@ -318,14 +335,19 @@ export const lookupItemPrice = tool({
     itemId: z.string().describe("The ID of the item to look up the price for"),
   }),
   execute: async ({ itemId }) => {
+    logToolCall("owner", "lookupItemPrice", { itemId }, "Owner");
     const { PAWN_ITEMS, getActualValue } = await import("../types/items");
 
     const item = PAWN_ITEMS.find((item) => item.id === itemId);
     if (!item) {
-      return `Item with ID "${itemId}" not found in the catalog.`;
+      const result = `Item with ID "${itemId}" not found in the catalog.`;
+      logToolResult("owner", "lookupItemPrice");
+      return result;
     }
 
     const actualValue = getActualValue(item);
-    return `${item.name} (${item.condition}): Market value is $${actualValue}. Description: ${item.description}`;
+    const result = `${item.name} (${item.condition}): Market value is $${actualValue}. Description: ${item.description}`;
+    logToolResult("owner", "lookupItemPrice");
+    return result;
   },
 });
