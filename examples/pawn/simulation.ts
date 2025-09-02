@@ -125,6 +125,7 @@ async function runOwnerAgentTurn(state: PawnGameState): Promise<boolean> {
         console.log(`Tool result ${i + 1}:`, result.toolName, result.result);
       });
     }
+    console.log("messages:", response?.response?.messages);
     console.log("=== END DEBUG ===\n");
 
     return true;

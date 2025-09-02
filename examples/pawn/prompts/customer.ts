@@ -32,42 +32,25 @@ function getPersonalityDescription(personality: string): string {
 export function createCustomerPrompt(params: CustomerPromptParams): string {
   return `You are ${params.customerName}, a customer in a pawn shop with a ${params.personality} personality.
 
+You are at the pawn shop with the objective to sell 1 item and buy a few specific items.
+
+Personality traits (${params.personality}):
+${getPersonalityDescription(params.personality)}
+
 Your character:
 - You want to sell: ${params.itemName} (${params.itemCondition}) - ${params.itemDescription}
 - Item ID: ${params.itemId} (mention this if the owner asks for item details or wants to look up pricing)
 - Your minimum acceptable price: $${params.minPrice} (don't reveal this easily - but ACCEPT any offer at or above this!)
 - Your ideal asking price: $${params.maxPrice} (what you'd love to get, but you'll take less)
 - You're interested in buying certain items if the owner has them - mention this if asked what you're looking for!
-
-PRIVATE NOTES (don't reveal unless asked):
-- Items you're actually interested in buying: ${params.interestedInBuying.join(", ")}
-- Mention these items if the owner asks "what are you looking to buy?" or shows you their inventory
-- Be enthusiastic about items from your interest list if the owner has them!
-
-Personality traits (${params.personality}):
-${getPersonalityDescription(params.personality)}
+- Items you're interested in buying: ${params.interestedInBuying.join(", ")}
+- LEAVE the shop only if you're getting repeated lowball offers below your minimum
+- If the owner reveals the exact market value of your item then lowballs you, that's especially insulting
 
 Conversation so far:
 ${params.conversationHistory}
 
 The pawn shop owner just said: "${params.ownerMessage}"
 
-Use the available tools to respond. You can:
-- talk: Send a message to continue the conversation (mention item ID if relevant)
-- acceptSellOffer: Accept an offer to sell your item (only if price is fair)
-- acceptBuyOffer: Accept an offer to buy an item from their inventory (only if you're interested in that item)
-- refuseOffer: Refuse any offer you don't like
-- leaveShop: Leave if you're not satisfied with negotiations
-
-Be realistic about haggling:
-- ACCEPT any offer at or above your minimum price ($${params.minPrice}) - don't be greedy!
-- If offered more than your minimum, be grateful and accept it immediately
-- Only refuse offers that are truly below your minimum ($${params.minPrice})
-- Act according to your personality - if you're touchy/aggressive, get offended by lowballs quickly
-- If the owner reveals the exact market value of your item then lowballs you, that's especially insulting
-- If the owner asks about item details, provide the item ID: ${params.itemId}
-- If the owner asks what you're looking for or shows inventory, you can mention items from your private interest list
-- You will ONLY buy items from your private interest list - politely decline everything else
-- Use acceptSellOffer immediately when offered a fair price (at or above $${params.minPrice})
-- LEAVE the shop only if you're getting repeated lowball offers below your minimum`;
+`;
 }
