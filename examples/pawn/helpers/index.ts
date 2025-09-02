@@ -2,3 +2,4 @@
 export * from "./customers";
 export * from "./logging";
 export * from "./game";
+export * from "./debug";

@@ -1,5 +1,6 @@
 import { type LoopState } from "../../../lib/simulation";
 import { type PawnItem } from "./items";
+import { type LedgerEntry } from "../helpers/debug";
 
 // Core game state that extends the simulation framework
 export interface PawnGameState extends LoopState {
@@ -23,6 +24,9 @@ export interface PawnGameState extends LoopState {
 
   // Conversation history for analysis
   conversations: Conversation[]; // All customer conversations
+
+  // Debug tracking ledger
+  ledger?: LedgerEntry[]; // Comprehensive interaction tracking
 }
 
 // Customer personality types

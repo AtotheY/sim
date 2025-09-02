@@ -8,6 +8,11 @@ import { GAME_CONFIG } from "../config";
 import { createCustomerPrompt } from "../prompts";
 import * as customerTools from "./customer";
 import { logToolCall, logToolResult } from "../helpers/logging";
+import {
+  recordCustomerTalked,
+  recordDeal,
+  recordCustomerLeft,
+} from "../helpers/debug";
 
 export const talkToCustomer = tool({
   description:
@@ -24,6 +29,9 @@ export const talkToCustomer = tool({
     if (!currentCustomer) {
       return "No customer is currently available to talk to.";
     }
+
+    // Record that we talked to this customer
+    recordCustomerTalked(state, currentCustomer.name, currentCustomer.id);
 
     // Find or create conversation for this customer
     let conversation = state.conversations.find(
@@ -123,6 +131,17 @@ export const talkToCustomer = tool({
           });
 
           conversation.outcome = "trade_made";
+
+          // Record the deal in ledger
+          recordDeal(
+            state,
+            "sell",
+            currentCustomer.name,
+            currentCustomer.id,
+            item.name,
+            price
+          );
+
           customerResponse = `${toolResult.message} ✅ DEAL COMPLETED! You bought ${item.name} for $${price}. You now have $${state.money} remaining.`;
         }
       } else if (toolResult?.action === "accept_buy_offer") {
@@ -171,6 +190,18 @@ export const talkToCustomer = tool({
             });
 
             conversation.outcome = "trade_made";
+
+            // Record the deal in ledger
+            recordDeal(
+              state,
+              "buy",
+              currentCustomer.name,
+              currentCustomer.id,
+              itemName,
+              price,
+              profit
+            );
+
             customerResponse = `${toolResult.message} ✅ SALE COMPLETED! You sold ${itemName} for $${price}. Profit: $${profit}. You now have $${state.money}.`;
           }
         }
@@ -179,6 +210,14 @@ export const talkToCustomer = tool({
       } else if (toolResult?.action === "leave_shop") {
         customerResponse = `${toolResult.message} (LEAVES SHOP)`;
         conversation.outcome = "customer_left";
+
+        // Record customer leaving
+        recordCustomerLeft(
+          state,
+          currentCustomer.name,
+          currentCustomer.id,
+          "left_voluntarily"
+        );
       }
     } else {
       customerResponse = "Let me think about that...";

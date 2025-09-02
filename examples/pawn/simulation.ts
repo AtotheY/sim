@@ -4,6 +4,10 @@ import {
   generateDailyCustomers,
   displayDayLedger,
   checkGameEndConditions,
+  recordCustomerArrival,
+  recordDayEnd,
+  displayDailySummary,
+  displayFinalReport,
 } from "./helpers";
 import { type PawnGameState, type GameResult } from "./types/types";
 import { GAME_CONFIG } from "./config";
@@ -70,7 +74,13 @@ function initializePawnState(): PawnGameState {
     currentCustomers: generateDailyCustomers(1),
     currentCustomerIndex: 0,
     conversations: [],
+    ledger: [],
   };
+
+  // Record initial customer arrivals
+  initialState.currentCustomers.forEach((customer) => {
+    recordCustomerArrival(initialState, customer.name, customer.id);
+  });
 
   console.log(`\n📅 Day ${initialState.day} begins! New customers arrive.`);
   return initialState;
@@ -151,8 +161,10 @@ export async function runPawnSimulation(): Promise<GameResult> {
       // Run owner agent turn
       const shouldContinue = await runOwnerAgentTurn(state);
 
-      // Display end-of-day ledger before advancing
+      // Record end of current day and display summaries
+      recordDayEnd(state);
       displayDayLedger(state);
+      displayDailySummary(state, state.day);
 
       // Check if we've reached max days before advancing
       if (state.day >= GAME_CONFIG.MAX_DAYS) {
@@ -169,12 +181,20 @@ export async function runPawnSimulation(): Promise<GameResult> {
       state.currentCustomers = generateDailyCustomers(state.day);
       state.currentCustomerIndex = 0;
 
+      // Record new customer arrivals
+      state.currentCustomers.forEach((customer) => {
+        recordCustomerArrival(state, customer.name, customer.id);
+      });
+
       console.log(`🗓️ Advanced to Day ${state.day} - New customers generated!`);
 
       return shouldContinue;
     },
 
     onEnd: (state, reason) => {
+      // Display comprehensive final report
+      displayFinalReport(state);
+
       clearSimState();
 
       const profit = state.money - GAME_CONFIG.STARTING_MONEY;
